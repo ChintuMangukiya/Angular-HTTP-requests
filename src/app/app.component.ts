@@ -16,13 +16,13 @@ export class AppComponent implements OnInit {
   onCreatePost(postData: { title: string; content: string }) {
     // Send Http request
     console.log(postData);
-  }
+  } 
 
   onFetchPosts() {
-    // Send Http request
+
   }
 
   onClearPosts() {
-    // Send Http request
+
   }
 }
