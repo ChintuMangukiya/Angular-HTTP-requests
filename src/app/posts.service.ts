@@ -1,4 +1,4 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Post } from "./post.model";
 import { map } from "rxjs/operators";
@@ -25,8 +25,20 @@ export class PostService{
     }
 
     fetchPosts(){
+
+      let searchParams = new HttpParams();
+
+      searchParams = searchParams.append('print', 'pretty');
+
+      searchParams = searchParams.append('custom', 'key');
+
       return this.http
-      .get<{ [key:string]:Post }>('https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json')
+      .get<{ [key:string]:Post }>('https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json',
+        {
+          headers: new HttpHeaders({ "Custom-Header" : "Hello" }),
+          params: searchParams
+        }
+      )
       .pipe(
         map((responseData) => {
           const postsArray: Post[] = [];
