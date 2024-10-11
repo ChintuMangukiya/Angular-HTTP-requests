@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
       }
     );
 
-    if (this.error) {
+    if (this.error){
       setInterval(() => {
         this.onFetchPosts();
       }, 50000);
@@ -45,14 +45,17 @@ export class AppComponent implements OnInit {
     this.isFetching = true;
     this.postsService
       .createAndStorePost(postData.title, postData.content)
-      .subscribe((Response) => {
-        console.log(Response.body);
-        this.isFetching = false;
-        this.onFetchPosts();
-      },(error)=>{
-        this.isFetching = false;
-        this.error = error.message;
-      });
+      .subscribe(
+        (Response) => {
+          console.log(Response.body);
+          this.isFetching = false;
+          this.onFetchPosts();
+        },
+        (error) => {
+          this.isFetching = false;
+          this.error = error.message;
+        }
+      );
   }
 
   onFetchPosts() {
@@ -76,16 +79,16 @@ export class AppComponent implements OnInit {
       )
     ) {
       this.isFetching = true;
-      this.postsService.clearPost().subscribe(() => {
-
-      this.loadedPosts.length = 0;
-        this.isFetching = false;
-      },
-    (error)=>{
-      this.isFetching = false;
-      this.error = error.message;
-    }
-    );
+      this.postsService.clearPost().subscribe(
+        () => {
+          this.loadedPosts.length = 0;
+          this.isFetching = false;
+        },
+        (error) => {
+          this.isFetching = false;
+          this.error = error.message;
+        }
+      );
     }
   }
 

@@ -1,4 +1,5 @@
-import {  HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
+import { HttpEventType, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
+import { tap } from "rxjs/operators";
 
 export class AuthInterceptorService implements HttpInterceptor{
 
@@ -6,10 +7,11 @@ export class AuthInterceptorService implements HttpInterceptor{
 
         // req.url = 'something NEW URL';  XX not possible
 
-        console.log(req.url);
-        console.log("Request is on its way");
+        const modifiedRequest = req.clone({
+            headers: req.headers.append('Auth', 'xyz')
+        });
 
-        return next.handle(req);
+        return next.handle(modifiedRequest);
         
     }
 }
