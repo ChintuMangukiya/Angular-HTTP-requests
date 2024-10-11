@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Post } from './post.model';
+import { PostService } from './posts.service';
 
 @Component({
   selector: 'app-root',
@@ -9,62 +10,67 @@ import { Post } from './post.model';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
-  loadedPosts: Post[] = [];
+
+  loadedPosts: Post[] =[];
+
+  error = null;
 
   isFetching = true;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private postsService: PostService) {}
 
   ngOnInit() {
-    this.fetchPosts();
+    this.isFetching = true;
+    this.postsService.fetchPosts().subscribe(posts => {
+      this.isFetching = false;
+      this.loadedPosts = posts;
+    }, error => {
+      this.isFetching = false;
+      this.error = error.message;
+    });
+
+    if(this.error)
+    {
+  setInterval(() => {
+    this.onFetchPosts();
+  }, 5000);
+}
+else{
+  setInterval(() => {
+    this.onFetchPosts();
+  }, 10000);
+}
   }
 
+  
   onCreatePost(postData: Post) {
 
     this.isFetching = true;
-    // Send Http request
-    this.http
-      .post<{name: string}>(
-        'https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json',
-        postData
-      )
-      .subscribe((responseData) => {
-        console.log(responseData);
-
-        console.log("is posinth");
-        this.fetchPosts();
-      });
+    this.postsService.createAndStorePost( postData.title, postData.content).subscribe(Response => {
+      this.isFetching = false;
+      this.onFetchPosts();
+    }); 
   }
 
   onFetchPosts() {
-    this.fetchPosts();
+    this.isFetching = true;
+    this.postsService.fetchPosts().subscribe(posts => {
+      this.isFetching = false;
+      console.log(posts);
+      this.loadedPosts = posts;
+    }, error => {
+      this.loadedPosts = [];
+      this.isFetching = false;
+      this.error = error.message;
+    });
   }
 
-  onClearPosts() {}
-
-  private fetchPosts() {
+  onClearPosts() {
 
     this.isFetching = true;
-
-    console.log("Fetching");
-    this.http
-      .get<{ [key:string]:Post }>('https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json')
-      .pipe(
-        map((responseData) => {
-          const postsArray: Post[] = [];
-
-          for (const key in responseData) {
-
-            if (responseData.hasOwnProperty(key)) {
-              postsArray.push({ ...responseData[key], id: key });
-            }
-          }
-          return postsArray;
-        })
-      )
-      .subscribe(posts => {
-        this.isFetching = false;
-        this.loadedPosts = posts;
-      });
+    this.postsService.clearPost().subscribe((data)=>{
+      this.loadedPosts.length = 0;
+      this.isFetching = false;
+    });
   }
 }
