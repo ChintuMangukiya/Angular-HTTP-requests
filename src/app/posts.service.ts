@@ -1,42 +1,42 @@
-import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { Post } from "./post.model";
-import { map } from "rxjs/operators";
+import { HttpClient, HttpEventType, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Post } from './post.model';
+import { map,tap } from 'rxjs/operators';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
-
-export class PostService{
+export class PostService {
   loadedPosts: Post[] = [];
 
-    constructor(private http:HttpClient){}
+  constructor(private http: HttpClient) {}
 
-    createAndStorePost(title: string, content: string)
-    { 
-        const postData: Post = {title:title, content:content};
-        
-        return this.http
-        .post<{name: string}>(
-          'https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json',
-          postData
-        )
-        ;
-    }
+  createAndStorePost(title: string, content: string) {
+    const postData: Post = { title: title, content: content };
 
-    fetchPosts(){
+    return this.http.post<{ name: string }>(
+      'https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json',
+      postData,
+      {
+        observe: 'response'
+      }
+    );
+  }
 
-      let searchParams = new HttpParams();
+  fetchPosts() {
+    let searchParams = new HttpParams();
 
-      searchParams = searchParams.append('print', 'pretty');
+    searchParams = searchParams.append('print', 'pretty');
 
-      searchParams = searchParams.append('custom', 'key');
+    searchParams = searchParams.append('custom', 'key');
 
-      return this.http
-      .get<{ [key:string]:Post }>('https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json',
+    return this.http
+      .get<{ [key: string]: Post }>(
+        'https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json',
         {
-          headers: new HttpHeaders({ "Custom-Header" : "Hello" }),
-          params: searchParams
+          headers: new HttpHeaders({ 'Custom-Header': 'Hello' }),
+          params: searchParams,
+          responseType: 'json'
         }
       )
       .pipe(
@@ -44,7 +44,6 @@ export class PostService{
           const postsArray: Post[] = [];
 
           for (const key in responseData) {
-
             if (responseData.hasOwnProperty(key)) {
               postsArray.push({ ...responseData[key], id: key });
             }
@@ -52,9 +51,26 @@ export class PostService{
           return postsArray;
         })
       );
-    }
+  }
 
-    clearPost(){
-        return this.http.delete('https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json');
-    }
+  clearPost() {
+    return this.http.delete(
+      'https://first-app-50ba4-default-rtdb.firebaseio.com/posts.json',
+      {
+        observe: 'events',
+        responseType: 'text'
+      }
+    ).pipe(tap((event) => {
+
+      if(event.type === HttpEventType.Sent)
+      {
+        console.log(event);
+      }
+
+      if(event.type === HttpEventType.Response)
+      {
+        console.log(event.body);
+      }
+    }));
+  }
 }

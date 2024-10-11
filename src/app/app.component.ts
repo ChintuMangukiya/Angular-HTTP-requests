@@ -46,6 +46,7 @@ export class AppComponent implements OnInit {
     this.postsService
       .createAndStorePost(postData.title, postData.content)
       .subscribe((Response) => {
+        console.log(Response.body);
         this.isFetching = false;
         this.onFetchPosts();
       },(error)=>{
